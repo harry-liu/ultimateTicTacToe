@@ -30,19 +30,89 @@ var app = {
     animateElement:document.getElementById("loading"),
     canvas:document.getElementById("canvas"),
     w:window.innerWidth,
-    ctx = this.canvas.getContext("2d"),
+    ctx:this.canvas.getContext("2d"),
+    point:function(x,y){
+        this.x = x;
+        this.y = y;
+    },
 
     showBody: function(){
-        setTimeout(function(){
-            this.animateElement.setAttribute('style','display:none;');
-            this.bodyElement.setAttribute('style', 'display:block;');
-        },900);
+        setTimeout(show,900,this.animateElement,this.bodyElement);
+        function show(animateElement,bodyElement){
+            animateElement.setAttribute('style','display:none;');
+            bodyElement.setAttribute('style', 'display:block;');
+        }
         this.draw();
     },
     draw:function(){
         this.canvas.width = this.w;
         this.canvas.height = this.w;
         this.ctx.beginPath();
+
+        drawBigPath(this.w,this.ctx);
+        drawSmallPath(this.w,this.ctx);
+
+        function drawBigPath(w,ctx){
+            drawPath(0,0,w,w,true,ctx);
+        };
+
+        function drawSmallPath(w,ctx){
+            for(var i = 1;i<=3;i++){
+                for(var k = 1;k<=3;k++){
+                    drawPath((k-1)*w/3+5,(i-1)*w/3+5,k*w/3-5,i*w/3-5,false,ctx);
+                    //console.log(((k-1)*(w-10)/3+5)+' '+((i-1)*(w-10)/3+5))
+                }
+            }
+        };
+
+        function drawPath(startX,startY,endX,endY,bigPath,ctx){
+            var width = endX - startX;
+            var height = endY - startY;
+            for(var i = 1;i<3;i++){
+                if(!bigPath){
+                    ctx.moveTo(5+startX,height/3*i+startY);
+                    ctx.lineTo(width-5+startX,height/3*i+startY);
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    ctx.moveTo(width/3*i+startX,0+5+startY);
+                    ctx.lineTo(width/3*i+startX,height-5+startY);
+                    ctx.stroke();
+                }
+                else{
+                    ctx.moveTo(5+startX,height/3*i+startY);
+                    ctx.lineTo(width-5+startX,height/3*i+startY);
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    ctx.moveTo(width/3*i+startX,0+5+startY);
+                    ctx.lineTo(width/3*i+startX,height-5+startY);
+                    ctx.stroke();
+                }
+            }
+        };
+
+        this.click();
+    },
+    click:function(){
+        this.canvas.addEventListener('click',getClickPoint,false,this.point);
+        function getClickPoint(event){
+            var clickPoint = new point(event.pageX,event.pageY);
+            console.log(clickPoint.x, clickPoint.y);
+            getClickSquare(clickPoint);
+        }
+    },
+    getDrawCircleOrCross:function(){
+
+    },
+    menu:function(){
+
+    },
+    singleOrMultiple:function(){
+
+    },
+    connect:function(){
+
     }
 };
 
@@ -54,57 +124,10 @@ document.getElementById("menu-btn").addEventListener('click',function(){
     
 });
 
-drawBigPath();
-drawSmallPath();
-
-function point(x,y){
-    this.x = x;
-    this.y = y;
-}
-
-function drawBigPath(){
-    drawPath(0,0,w,w,true);
-}
-
-function drawSmallPath(){
-    for(var i = 1;i<=3;i++){
-        for(var k = 1;k<=3;k++){
-            drawPath((k-1)*w/3+5,(i-1)*w/3+5,k*w/3-5,i*w/3-5,false);
-            //console.log(((k-1)*(w-10)/3+5)+' '+((i-1)*(w-10)/3+5))
-        }
-    }
-}
-
-function drawPath(startX,startY,endX,endY,bigPath){
-    var width = endX - startX;
-    var height = endY - startY;
-    for(var i = 1;i<3;i++){
-        if(!bigPath){
-            ctx.moveTo(5+startX,height/3*i+startY);
-            ctx.lineTo(width-5+startX,height/3*i+startY);
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            ctx.moveTo(width/3*i+startX,0+5+startY);
-            ctx.lineTo(width/3*i+startX,height-5+startY);
-            ctx.stroke();
-        }
-        else{
-            ctx.moveTo(5+startX,height/3*i+startY);
-            ctx.lineTo(width-5+startX,height/3*i+startY);
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            ctx.moveTo(width/3*i+startX,0+5+startY);
-            ctx.lineTo(width/3*i+startX,height-5+startY);
-            ctx.stroke();
-        }
-    }
-}
 
 function drawCircle(topLeftP,botRightP){
     var radius = (botRightP.x - topLeftP.x)/2;
-    var centerP = new point((topLeftP.x + botRightP.x)/2,(topLeftP.y + botRightP.y)/2)
+    var centerP = point((topLeftP.x + botRightP.x)/2,(topLeftP.y + botRightP.y)/2)
     ctx.beginPath();
     ctx.arc(centerP.x, centerP.y, radius, 0, 2 * Math.PI, false);
     ctx.lineWidth = 2;
@@ -142,9 +165,5 @@ function getDrawCircleOrCross(topLeftP,botRightP){
     drawCircle(topLeftP,botRightP);
 }
 
-canvas.addEventListener('click', function(event) {
-    var clickPoint = new point(event.pageX,event.pageY);
-    console.log(clickPoint.x, clickPoint.y);
-    getClickSquare(clickPoint);
-}, false);
+
 
