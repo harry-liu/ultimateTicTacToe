@@ -25,16 +25,18 @@
 
 // app.initialize();
 
-var app = {
+var ttt = {
     bodyElement:document.getElementById("container"),
     animateElement:document.getElementById("loading"),
     canvas:document.getElementById("canvas"),
     w:window.innerWidth,
     ctx:this.canvas.getContext("2d"),
+    disableList:[],
     point:function(x,y){
         this.x = x;
         this.y = y;
     },
+    
 
     showBody: function(){
         setTimeout(show,900,this.animateElement,this.bodyElement);
@@ -60,7 +62,6 @@ var app = {
             for(var i = 1;i<=3;i++){
                 for(var k = 1;k<=3;k++){
                     drawPath((k-1)*w/3+5,(i-1)*w/3+5,k*w/3-5,i*w/3-5,false,ctx);
-                    //console.log(((k-1)*(w-10)/3+5)+' '+((i-1)*(w-10)/3+5))
                 }
             }
         };
@@ -95,15 +96,52 @@ var app = {
         this.click();
     },
     click:function(){
-        this.canvas.addEventListener('click',getClickPoint,false,this.point);
-        function getClickPoint(event){
-            var clickPoint = new point(event.pageX,event.pageY);
+        this.canvas.addEventListener('click',getClickPoint,false);
+        function getClickPoint(){
+            var clickPoint = new ttt.point(event.pageX,event.pageY);
             console.log(clickPoint.x, clickPoint.y);
-            getClickSquare(clickPoint);
-        }
+            getClickSquare(clickPoint,ttt.w);
+        };
+        function getClickSquare(clickPoint,w){
+            for(var i = 1;i<=3;i++){
+                for(var k = 1;k<=3;k++){
+                    var bTopLeftP = new ttt.point((k-1)*w/3+5,(i-1)*w/3+5);
+                    var bBotRightP = new ttt.point(k*w/3-5,i*w/3-5);
+                    if(bTopLeftP.x < clickPoint.x && clickPoint.x < bBotRightP.x && bTopLeftP.y < clickPoint.y && clickPoint.y < bBotRightP.y){
+                        //console.log(bTopLeftP.x+" "+bTopLeftP.y)
+                        for(var x = 1;x <= 3;x++){
+                            for(var y = 1; y <= 3; y++){
+                                var width = bBotRightP.x - bTopLeftP.x;
+                                var sTopLeftP = new ttt.point(width/3*(x-1)+5+bTopLeftP.x, width/3*(y-1)+5+bTopLeftP.y);
+                                var sBotRightP = new ttt.point(width/3*x-5+bTopLeftP.x, width/3*y-5+bTopLeftP.y);
+                                if(sTopLeftP.x < clickPoint.x && clickPoint.x < sBotRightP.x && sTopLeftP.y < clickPoint.y && clickPoint.y < sBotRightP.y){
+                                    if(ttt.checkDisableSmallSquare(ttt.disableList,sTopLeftP,sBotRightP)){
+                                        if(ttt.getDrawCircleOrCross())
+                                        {
+                                            ttt.drawCircle(sTopLeftP,sBotRightP);
+                                        }
+                                        else
+                                        {
+                                            ttt.drawCross(sTopLeftP,sBotRightP);
+                                        }
+                                        ttt.disableList.push([sTopLeftP,sBotRightP]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
     },
     getDrawCircleOrCross:function(){
-
+        if(this.status == false){
+            this.status = true;
+        }
+        else{
+            this.status = false;
+        }
+        return !this.status;
     },
     menu:function(){
 
@@ -113,57 +151,45 @@ var app = {
     },
     connect:function(){
 
+    },
+    drawCircle:function(topLeftP,botRightP){
+        var radius = (botRightP.x - topLeftP.x)/2;
+        var centerP =new this.point((topLeftP.x + botRightP.x)/2,(topLeftP.y + botRightP.y)/2)
+        this.ctx.beginPath();
+        this.ctx.arc(centerP.x, centerP.y, radius, 0, 2 * Math.PI, false);
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+    },
+    drawCross:function(topLeftP,botRightP){
+        this.ctx.moveTo(topLeftP.x,topLeftP.y);
+        this.ctx.lineTo(botRightP.x,botRightP.y);
+        this.ctx.moveTo(botRightP.x,topLeftP.y);
+        this.ctx.lineTo(topLeftP.x,botRightP.y);
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+    },
+    checkWin:function(player){
+        //1 and true is player1, 0 and false is player2
+
+    },
+    checkDisableSmallSquare:function(disableList,topLeftP,botRightP){
+        var check = true;
+        for(var i = 0;i < disableList.length; i++){
+            if(topLeftP.x == disableList[i][0].x && topLeftP.y == disableList[i][0].y && botRightP.x == disableList[i][1].x && botRightP.y == disableList[i][1].y){
+                check = false;
+            }
+        }
+        return check;
+    },
+    changeSmallSquareStatus:function(){
+
     }
 };
 
-app.showBody();
+ttt.showBody();
 
 document.getElementById("menu-btn").addEventListener('click',function(){
     console.log("click");
     document.getElementById("menu").setAttribute('style','opacity:1; display:block');
     
 });
-
-
-function drawCircle(topLeftP,botRightP){
-    var radius = (botRightP.x - topLeftP.x)/2;
-    var centerP = point((topLeftP.x + botRightP.x)/2,(topLeftP.y + botRightP.y)/2)
-    ctx.beginPath();
-    ctx.arc(centerP.x, centerP.y, radius, 0, 2 * Math.PI, false);
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}
-
-function drawCross(){
-
-}
-
-function getClickSquare(clickPoint){
-    for(var i = 1;i<=3;i++){
-        for(var k = 1;k<=3;k++){
-            var bTopLeftP = new point((k-1)*w/3+5,(i-1)*w/3+5);
-            var bBotRightP = new point(k*w/3-5,i*w/3-5);
-            if(bTopLeftP.x < clickPoint.x && clickPoint.x < bBotRightP.x && bTopLeftP.y < clickPoint.y && clickPoint.y < bBotRightP.y){
-                //console.log(bTopLeftP.x+" "+bTopLeftP.y)
-                for(var x = 1;x <= 3;x++){
-                    for(var y = 1; y <= 3; y++){
-                        var width = bBotRightP.x - bTopLeftP.x;
-                        var sTopLeftP = new point(width/3*(x-1)+5+bTopLeftP.x, width/3*(y-1)+5+bTopLeftP.y);
-                        var sBotRightP = new point(width/3*x-5+bTopLeftP.x, width/3*y-5+bTopLeftP.y);
-                        if(sTopLeftP.x < clickPoint.x && clickPoint.x < sBotRightP.x && sTopLeftP.y < clickPoint.y && clickPoint.y < sBotRightP.y){
-                            getDrawCircleOrCross(sTopLeftP,sBotRightP);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-function getDrawCircleOrCross(topLeftP,botRightP){
-    console.log(topLeftP.x+" "+botRightP.y);
-    drawCircle(topLeftP,botRightP);
-}
-
-
-
