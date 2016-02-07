@@ -269,6 +269,10 @@ var ttt = {
         disableList[key] = value;
     },
     updateBigWinList:function(bigWinList,key,value){
+        //var number = key*9;
+        for(var i = 0; i < 9; i++){
+            ttt.disableList[key*9+i] = value;
+        }
         bigWinList[key] = value;
     }
 };
