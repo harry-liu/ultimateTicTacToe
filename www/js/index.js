@@ -32,6 +32,19 @@ var ttt = {
     w:window.innerWidth,
     ctx:this.canvas.getContext("2d"),
     disableList:[],
+    bigWinList:[],
+    playerStatus:true,
+    addDisableList:function(){
+        for(var i = 1; i <= 81; i++){
+            //-1 is no one use this
+            ttt.disableList.push(-1);
+        }
+    },
+    addBigWinList:function(){
+        for(var i = 1; i<=9; i++){
+            ttt.bigWinList.push(-1);
+        }
+    },
     point:function(x,y){
         this.x = x;
         this.y = y;
@@ -44,6 +57,8 @@ var ttt = {
             animateElement.setAttribute('style','display:none;');
             bodyElement.setAttribute('style', 'display:block;');
         }
+        this.addDisableList();
+        this.addBigWinList();
         this.draw();
     },
     draw:function(){
@@ -115,16 +130,42 @@ var ttt = {
                                 var sTopLeftP = new ttt.point(width/3*(x-1)+5+bTopLeftP.x, width/3*(y-1)+5+bTopLeftP.y);
                                 var sBotRightP = new ttt.point(width/3*x-5+bTopLeftP.x, width/3*y-5+bTopLeftP.y);
                                 if(sTopLeftP.x < clickPoint.x && clickPoint.x < sBotRightP.x && sTopLeftP.y < clickPoint.y && clickPoint.y < sBotRightP.y){
-                                    if(ttt.checkDisableSmallSquare(ttt.disableList,sTopLeftP,sBotRightP)){
-                                        if(ttt.getDrawCircleOrCross())
+                                    var key = (i-1)*3*9 + (k-1)*9 + (y-1)*3 + (x-1);
+                                    var value = -1;
+                                    if(ttt.playerStatus == true){
+                                        value = 1;
+                                    }
+                                    else{
+                                        value = 0;
+                                    }
+                                    if(ttt.checkDisableSmallSquare(ttt.disableList,key)){
+                                        if(ttt.playerStatus == true)
                                         {
-                                            ttt.drawCircle(sTopLeftP,sBotRightP);
+                                            //player1 is circle
+                                            ttt.drawCircle(sTopLeftP,sBotRightP,'small');
+                                            ttt.updateDisableSmallSquare(ttt.disableList,key,value);
+                                            if(ttt.checkSmallWin(ttt.disableList,key,value)){
+                                                ttt.drawCircle(bTopLeftP,bBotRightP,'big');
+                                                ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
+                                                if(ttt.checkBigWin(ttt.bigWinList,value)){
+                                                    alert('player1 win!!!');
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            ttt.drawCross(sTopLeftP,sBotRightP);
+                                            //player2 is cross
+                                            ttt.drawCross(sTopLeftP,sBotRightP,'small');
+                                            ttt.updateDisableSmallSquare(ttt.disableList,key,value);
+                                            if(ttt.checkSmallWin(ttt.disableList,key,value)){
+                                                ttt.drawCross(bTopLeftP,bBotRightP,'big');
+                                                ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
+                                                if(ttt.checkBigWin(ttt.bigWinList,value)){
+                                                    alert('player2 win!!!');
+                                                }
+                                            }
                                         }
-                                        ttt.disableList.push([sTopLeftP,sBotRightP]);
+                                        ttt.changePlayerStatus();
                                     }
                                 }
                             }
@@ -134,14 +175,14 @@ var ttt = {
             }
         };
     },
-    getDrawCircleOrCross:function(){
-        if(this.status == false){
-            this.status = true;
+    changePlayerStatus:function(){
+        //status true is player 1, status false is player2
+        if(this.playerStatus == true){
+            this.playerStatus = false;
         }
         else{
-            this.status = false;
+            this.playerStatus = true;
         }
-        return !this.status;
     },
     menu:function(){
 
@@ -152,37 +193,83 @@ var ttt = {
     connect:function(){
 
     },
-    drawCircle:function(topLeftP,botRightP){
+    drawCircle:function(topLeftP,botRightP,drawStyle){
         var radius = (botRightP.x - topLeftP.x)/2;
         var centerP =new this.point((topLeftP.x + botRightP.x)/2,(topLeftP.y + botRightP.y)/2)
         this.ctx.beginPath();
         this.ctx.arc(centerP.x, centerP.y, radius, 0, 2 * Math.PI, false);
-        this.ctx.lineWidth = 2;
+        if(drawStyle=='small'){
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = '#000000';
+        }
+        else{
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeStyle = '#ff0000';
+        }
         this.ctx.stroke();
     },
-    drawCross:function(topLeftP,botRightP){
+    drawCross:function(topLeftP,botRightP,drawStyle){
+        this.ctx.beginPath();
         this.ctx.moveTo(topLeftP.x,topLeftP.y);
         this.ctx.lineTo(botRightP.x,botRightP.y);
         this.ctx.moveTo(botRightP.x,topLeftP.y);
         this.ctx.lineTo(topLeftP.x,botRightP.y);
-        this.ctx.lineWidth = 2;
+        if(drawStyle=='small'){
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = '#000000';
+        }
+        else{
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeStyle = '#ff0000';
+        }
         this.ctx.stroke();
     },
-    checkWin:function(player){
+    checkSmallWin:function(disableList,key,value){
         //1 and true is player1, 0 and false is player2
-
+        var startNumber = parseInt(key/9)*9;
+        return this.checkWin(disableList,startNumber,value);
     },
-    checkDisableSmallSquare:function(disableList,topLeftP,botRightP){
-        var check = true;
-        for(var i = 0;i < disableList.length; i++){
-            if(topLeftP.x == disableList[i][0].x && topLeftP.y == disableList[i][0].y && botRightP.x == disableList[i][1].x && botRightP.y == disableList[i][1].y){
-                check = false;
-            }
+    checkBigWin:function(bigWinList,value){
+        return this.checkWin(bigWinList,0,value);
+    },
+    checkWin:function(disableList,startNumber,value){
+        if(disableList[startNumber] == value && disableList[startNumber+1] == value && disableList[startNumber+2] == value){
+            return true;
+        }
+        if(disableList[startNumber+3] == value && disableList[startNumber+4] == value && disableList[startNumber+5] == value){
+            return true;
+        }
+        if(disableList[startNumber+6] == value && disableList[startNumber+7] == value && disableList[startNumber+8] == value){
+            return true;
+        }
+        if(disableList[startNumber] == value && disableList[startNumber+3] == value && disableList[startNumber+6] == value){
+            return true;
+        }
+        if(disableList[startNumber+1] == value && disableList[startNumber+4] == value && disableList[startNumber+7] == value){
+            return true;
+        }
+        if(disableList[startNumber+2] == value && disableList[startNumber+5] == value && disableList[startNumber+8] == value){
+            return true;
+        }
+        if(disableList[startNumber] == value && disableList[startNumber+4] == value && disableList[startNumber+8] == value){
+            return true;
+        }
+        if(disableList[startNumber+2] == value && disableList[startNumber+4] == value && disableList[startNumber+6] == value){
+            return true;
+        }
+    },
+    checkDisableSmallSquare:function(disableList,key){
+        var check = false;
+        if(disableList[key] == -1){
+            check = true;
         }
         return check;
     },
-    changeSmallSquareStatus:function(){
-
+    updateDisableSmallSquare:function(disableList,key,value){
+        disableList[key] = value;
+    },
+    updateBigWinList:function(bigWinList,key,value){
+        bigWinList[key] = value;
     }
 };
 
