@@ -49,6 +49,13 @@ var ttt = {
         this.x = x;
         this.y = y;
     },
+    reset:function(){
+        this.disableList = [];
+        this.bigWinList = [];
+        this.playerStatus = true;
+        this.addDisableList();
+        this.addBigWinList();
+    },
     
 
     showBody: function(){
@@ -60,6 +67,7 @@ var ttt = {
         this.addDisableList();
         this.addBigWinList();
         this.draw();
+        this.menu();
     },
     draw:function(){
         this.canvas.width = this.w;
@@ -114,7 +122,7 @@ var ttt = {
         this.canvas.addEventListener('click',getClickPoint,false);
         function getClickPoint(){
             var clickPoint = new ttt.point(event.pageX,event.pageY);
-            console.log(clickPoint.x, clickPoint.y);
+            //console.log(clickPoint.x, clickPoint.y);
             getClickSquare(clickPoint,ttt.w);
         };
         function getClickSquare(clickPoint,w){
@@ -149,6 +157,8 @@ var ttt = {
                                                 ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
                                                 if(ttt.checkBigWin(ttt.bigWinList,value)){
                                                     alert('player1 win!!!');
+                                                    ttt.reset();
+                                                    ttt.draw();
                                                 }
                                             }
                                         }
@@ -162,6 +172,8 @@ var ttt = {
                                                 ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
                                                 if(ttt.checkBigWin(ttt.bigWinList,value)){
                                                     alert('player2 win!!!');
+                                                    ttt.reset();
+                                                    ttt.draw();
                                                 }
                                             }
                                         }
@@ -185,10 +197,35 @@ var ttt = {
         }
     },
     menu:function(){
+        document.getElementById("menu-btn").addEventListener('click',function(){
+            document.getElementById("menu").setAttribute('style','opacity:1; display:block');
+            ttt.restart();
+            ttt.cancle();
+            ttt.playOffline();
+        });
 
     },
-    singleOrMultiple:function(){
+    restart:function(){
+        document.getElementById("restart").addEventListener('click',function(){
+            ttt.reset();
+            ttt.draw();
+            document.getElementById("menu").setAttribute('style','opacity:0; display:none');
+        });
+    },
+    cancle:function(){
+        document.getElementById("cancle").addEventListener('click',function(){
+            document.getElementById("menu").setAttribute('style','opacity:0; display:none');
+        }); 
+    },
+    playOnline:function(){
 
+    },
+    playOffline:function(){
+        document.getElementById("playOffline").addEventListener('click',function(){
+            ttt.reset();
+            ttt.draw();
+            document.getElementById("menu").setAttribute('style','opacity:0; display:none');
+        })
     },
     connect:function(){
 
@@ -278,9 +315,3 @@ var ttt = {
 };
 
 ttt.showBody();
-
-document.getElementById("menu-btn").addEventListener('click',function(){
-    console.log("click");
-    document.getElementById("menu").setAttribute('style','opacity:1; display:block');
-    
-});

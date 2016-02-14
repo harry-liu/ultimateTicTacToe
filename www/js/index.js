@@ -218,7 +218,8 @@ var ttt = {
         }); 
     },
     playOnline:function(){
-
+        var myFirebase = new Firebase("https://ultimatetictactoe11.firebaseIO.com");
+        
     },
     playOffline:function(){
         document.getElementById("playOffline").addEventListener('click',function(){
