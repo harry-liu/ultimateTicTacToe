@@ -69,6 +69,7 @@ var ttt = {
         this.addBigWinList();
         this.draw();
         this.menu();
+        this.click();
         ttt.restart();
         ttt.cancle();
         ttt.playOffline();
@@ -120,7 +121,6 @@ var ttt = {
                 }
             }
         };
-        this.click();
     },
     click:function(){
         this.canvas.addEventListener('click',getClickPoint,false);
@@ -198,7 +198,65 @@ var ttt = {
                     alert("its not your turn!!!");
                 }
                 else{
-                    
+                    for(var i = 1;i<=3;i++){
+                        for(var k = 1;k<=3;k++){
+                            var bTopLeftP = new ttt.point((k-1)*w/3+5,(i-1)*w/3+5);
+                            var bBotRightP = new ttt.point(k*w/3-5,i*w/3-5);
+                            if(bTopLeftP.x < clickPoint.x && clickPoint.x < bBotRightP.x && bTopLeftP.y < clickPoint.y && clickPoint.y < bBotRightP.y){
+                                //console.log(bTopLeftP.x+" "+bTopLeftP.y)
+                                for(var x = 1;x <= 3;x++){
+                                    for(var y = 1; y <= 3; y++){
+                                        var width = bBotRightP.x - bTopLeftP.x;
+                                        var sTopLeftP = new ttt.point(width/3*(x-1)+5+bTopLeftP.x, width/3*(y-1)+5+bTopLeftP.y);
+                                        var sBotRightP = new ttt.point(width/3*x-5+bTopLeftP.x, width/3*y-5+bTopLeftP.y);
+                                        if(sTopLeftP.x < clickPoint.x && clickPoint.x < sBotRightP.x && sTopLeftP.y < clickPoint.y && clickPoint.y < sBotRightP.y){
+                                            var key = (i-1)*3*9 + (k-1)*9 + (y-1)*3 + (x-1);
+                                            var value = -1;
+                                            if(ttt.playerStatus == true){
+                                                value = 1;
+                                            }
+                                            else{
+                                                value = 0;
+                                            }
+                                            if(ttt.checkDisableSmallSquare(ttt.disableList,key)){
+                                                if(ttt.onlinePlayerStatus == true)
+                                                {
+                                                    //player1 is circle
+                                                    ttt.drawCircle(sTopLeftP,sBotRightP,'small');
+                                                    ttt.updateDisableSmallSquare(ttt.disableList,key,value);
+                                                    if(ttt.checkSmallWin(ttt.disableList,key,value)){
+                                                        ttt.drawCircle(bTopLeftP,bBotRightP,'big');
+                                                        ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
+                                                        if(ttt.checkBigWin(ttt.bigWinList,value)){
+                                                            alert('player1 win!!!');
+                                                            ttt.reset();
+                                                            ttt.draw();
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    //player2 is cross
+                                                    ttt.drawCross(sTopLeftP,sBotRightP,'small');
+                                                    ttt.updateDisableSmallSquare(ttt.disableList,key,value);
+                                                    if(ttt.checkSmallWin(ttt.disableList,key,value)){
+                                                        ttt.drawCross(bTopLeftP,bBotRightP,'big');
+                                                        ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
+                                                        if(ttt.checkBigWin(ttt.bigWinList,value)){
+                                                            alert('player2 win!!!');
+                                                            ttt.reset();
+                                                            ttt.draw();
+                                                        }
+                                                    }
+                                                }
+                                                ttt.changePlayerStatus();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -260,10 +318,10 @@ var ttt = {
                 roomRef = ref.child(path);
                 ttt.playerStatus = false;
                 ttt.onlinePlayerStatus = false;
+                ttt.listenToRoom(roomRef);
                 roomRef.update({
                     "roomStatus":0
                 });
-                ttt.listenToRoom(roomRef);
                 //var childRef = ref.child(path);
                 // console.log(childRef.toString());
                 //console.log("has empty room");
@@ -295,10 +353,10 @@ var ttt = {
                 document.getElementById("finding-player2").setAttribute('style','display:none');
                 alert("game start");
             }
+            if(ttt.playerStatus == true){
+                alert("its your turn!")
+            }
             if(ttt.playerStatus == false){
-                if(ttt.playerStatus == true){
-                    alert("its your turn!")
-                }
                 if(childSnapshot.name() == "winner" && ttt.onlinePlayerStatus == true && childSnapshot.val() == 1){
                     alert("You Win!");
                 }
@@ -311,7 +369,6 @@ var ttt = {
                 else if(childSnapshot.name() == "winner" && ttt.onlinePlayerStatus == false && childSnapshot.val() == 1){
                     alert("You Lose!");
                 }
-
             }
             //console.log("The updated post title is " + childSnapshot.title); 
         });

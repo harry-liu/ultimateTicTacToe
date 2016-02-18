@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
+        <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *"> -->
         <meta name="format-detection" content="telephone=no">
         <meta name="msapplication-tap-highlight" content="no">
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
@@ -11,9 +11,12 @@
     </head>
     <body>
         <div class = "loading" id = "loading"></div>
+        <div class = "finding-player2" id = "finding-player2">
+            <h2>Fingding player2...</h2>
+        </div>
         <div class = "menu animate" id = "menu">
             <ul>
-                <li>PLay online</li>
+                <li id = "playOnline">PLay online</li>
                 <li id = "playOffline">Play offline</li>
                 <li id = "restart">Restart</li>
                 <li id = "cancle">Cancle</li>
