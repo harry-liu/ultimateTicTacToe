@@ -34,6 +34,8 @@ var ttt = {
     disableList:[],
     bigWinList:[],
     playerStatus:true,
+    onlineStatus:false,
+    onlinePlayerStatus:true,
     addDisableList:function(){
         for(var i = 1; i <= 81; i++){
             //-1 is no one use this
@@ -56,7 +58,6 @@ var ttt = {
         this.addDisableList();
         this.addBigWinList();
     },
-    
 
     showBody: function(){
         setTimeout(show,900,this.animateElement,this.bodyElement);
@@ -68,6 +69,10 @@ var ttt = {
         this.addBigWinList();
         this.draw();
         this.menu();
+        ttt.restart();
+        ttt.cancle();
+        ttt.playOffline();
+        ttt.playOnline();
     },
     draw:function(){
         this.canvas.width = this.w;
@@ -115,7 +120,6 @@ var ttt = {
                 }
             }
         };
-
         this.click();
     },
     click:function(){
@@ -126,65 +130,78 @@ var ttt = {
             getClickSquare(clickPoint,ttt.w);
         };
         function getClickSquare(clickPoint,w){
-            for(var i = 1;i<=3;i++){
-                for(var k = 1;k<=3;k++){
-                    var bTopLeftP = new ttt.point((k-1)*w/3+5,(i-1)*w/3+5);
-                    var bBotRightP = new ttt.point(k*w/3-5,i*w/3-5);
-                    if(bTopLeftP.x < clickPoint.x && clickPoint.x < bBotRightP.x && bTopLeftP.y < clickPoint.y && clickPoint.y < bBotRightP.y){
-                        //console.log(bTopLeftP.x+" "+bTopLeftP.y)
-                        for(var x = 1;x <= 3;x++){
-                            for(var y = 1; y <= 3; y++){
-                                var width = bBotRightP.x - bTopLeftP.x;
-                                var sTopLeftP = new ttt.point(width/3*(x-1)+5+bTopLeftP.x, width/3*(y-1)+5+bTopLeftP.y);
-                                var sBotRightP = new ttt.point(width/3*x-5+bTopLeftP.x, width/3*y-5+bTopLeftP.y);
-                                if(sTopLeftP.x < clickPoint.x && clickPoint.x < sBotRightP.x && sTopLeftP.y < clickPoint.y && clickPoint.y < sBotRightP.y){
-                                    var key = (i-1)*3*9 + (k-1)*9 + (y-1)*3 + (x-1);
-                                    var value = -1;
-                                    if(ttt.playerStatus == true){
-                                        value = 1;
-                                    }
-                                    else{
-                                        value = 0;
-                                    }
-                                    if(ttt.checkDisableSmallSquare(ttt.disableList,key)){
-                                        if(ttt.playerStatus == true)
-                                        {
-                                            //player1 is circle
-                                            ttt.drawCircle(sTopLeftP,sBotRightP,'small');
-                                            ttt.updateDisableSmallSquare(ttt.disableList,key,value);
-                                            if(ttt.checkSmallWin(ttt.disableList,key,value)){
-                                                ttt.drawCircle(bTopLeftP,bBotRightP,'big');
-                                                ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
-                                                if(ttt.checkBigWin(ttt.bigWinList,value)){
-                                                    alert('player1 win!!!');
-                                                    ttt.reset();
-                                                    ttt.draw();
+            if(ttt.onlineStatus == false){
+
+                for(var i = 1;i<=3;i++){
+                    for(var k = 1;k<=3;k++){
+                        var bTopLeftP = new ttt.point((k-1)*w/3+5,(i-1)*w/3+5);
+                        var bBotRightP = new ttt.point(k*w/3-5,i*w/3-5);
+                        if(bTopLeftP.x < clickPoint.x && clickPoint.x < bBotRightP.x && bTopLeftP.y < clickPoint.y && clickPoint.y < bBotRightP.y){
+                            //console.log(bTopLeftP.x+" "+bTopLeftP.y)
+                            for(var x = 1;x <= 3;x++){
+                                for(var y = 1; y <= 3; y++){
+                                    var width = bBotRightP.x - bTopLeftP.x;
+                                    var sTopLeftP = new ttt.point(width/3*(x-1)+5+bTopLeftP.x, width/3*(y-1)+5+bTopLeftP.y);
+                                    var sBotRightP = new ttt.point(width/3*x-5+bTopLeftP.x, width/3*y-5+bTopLeftP.y);
+                                    if(sTopLeftP.x < clickPoint.x && clickPoint.x < sBotRightP.x && sTopLeftP.y < clickPoint.y && clickPoint.y < sBotRightP.y){
+                                        var key = (i-1)*3*9 + (k-1)*9 + (y-1)*3 + (x-1);
+                                        var value = -1;
+                                        if(ttt.playerStatus == true){
+                                            value = 1;
+                                        }
+                                        else{
+                                            value = 0;
+                                        }
+                                        if(ttt.checkDisableSmallSquare(ttt.disableList,key)){
+                                            if(ttt.playerStatus == true)
+                                            {
+                                                //player1 is circle
+                                                ttt.drawCircle(sTopLeftP,sBotRightP,'small');
+                                                ttt.updateDisableSmallSquare(ttt.disableList,key,value);
+                                                if(ttt.checkSmallWin(ttt.disableList,key,value)){
+                                                    ttt.drawCircle(bTopLeftP,bBotRightP,'big');
+                                                    ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
+                                                    if(ttt.checkBigWin(ttt.bigWinList,value)){
+                                                        alert('player1 win!!!');
+                                                        ttt.reset();
+                                                        ttt.draw();
+                                                    }
                                                 }
                                             }
-                                        }
-                                        else
-                                        {
-                                            //player2 is cross
-                                            ttt.drawCross(sTopLeftP,sBotRightP,'small');
-                                            ttt.updateDisableSmallSquare(ttt.disableList,key,value);
-                                            if(ttt.checkSmallWin(ttt.disableList,key,value)){
-                                                ttt.drawCross(bTopLeftP,bBotRightP,'big');
-                                                ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
-                                                if(ttt.checkBigWin(ttt.bigWinList,value)){
-                                                    alert('player2 win!!!');
-                                                    ttt.reset();
-                                                    ttt.draw();
+                                            else
+                                            {
+                                                //player2 is cross
+                                                ttt.drawCross(sTopLeftP,sBotRightP,'small');
+                                                ttt.updateDisableSmallSquare(ttt.disableList,key,value);
+                                                if(ttt.checkSmallWin(ttt.disableList,key,value)){
+                                                    ttt.drawCross(bTopLeftP,bBotRightP,'big');
+                                                    ttt.updateBigWinList(ttt.bigWinList,(i-1)*3+k-1,value);
+                                                    if(ttt.checkBigWin(ttt.bigWinList,value)){
+                                                        alert('player2 win!!!');
+                                                        ttt.reset();
+                                                        ttt.draw();
+                                                    }
                                                 }
                                             }
+                                            ttt.changePlayerStatus();
                                         }
-                                        ttt.changePlayerStatus();
                                     }
                                 }
                             }
                         }
                     }
                 }
+
             }
+            else{
+                if(ttt.playerStatus == false){
+                    alert("its not your turn!!!");
+                }
+                else{
+                    
+                }
+            }
+
         };
     },
     changePlayerStatus:function(){
@@ -199,11 +216,7 @@ var ttt = {
     menu:function(){
         document.getElementById("menu-btn").addEventListener('click',function(){
             document.getElementById("menu").setAttribute('style','opacity:1; display:block');
-            ttt.restart();
-            ttt.cancle();
-            ttt.playOffline();
         });
-
     },
     restart:function(){
         document.getElementById("restart").addEventListener('click',function(){
@@ -218,18 +231,90 @@ var ttt = {
         }); 
     },
     playOnline:function(){
-        var myFirebase = new Firebase("https://ultimatetictactoe11.firebaseIO.com");
-        
-    },
-    playOffline:function(){
-        document.getElementById("playOffline").addEventListener('click',function(){
+        document.getElementById("playOnline").addEventListener('click',function(){
+            ttt.onlineStatus = true;
             ttt.reset();
             ttt.draw();
+            var roomPath = ttt.checkEmptyRoom();
+            //var roomRef = new Firebase("https://ultimatetictactoe11.firebaseIO.com/");
+            //roomRef = roomRef.child(roomPath);
             document.getElementById("menu").setAttribute('style','opacity:0; display:none');
         })
     },
-    connect:function(){
+    playOffline:function(){
+        document.getElementById("playOffline").addEventListener('click',function(){
+            ttt.onlineStatus = false;
+            ttt.reset();
+            ttt.draw();
+            var ref = new Firebase("https://ultimatetictactoe11.firebaseIO.com/");
+            ref.off();
+            document.getElementById("menu").setAttribute('style','opacity:0; display:none');
+        })
+    },
+    checkEmptyRoom:function(){
+        var ref = new Firebase("https://ultimatetictactoe11.firebaseIO.com/");
+        var roomRef;
+        ref.orderByChild("roomStatus").equalTo(1).once("value", function(snapshot) {
+            if(snapshot.exists()){
+                var path = Object.keys(snapshot.val())[0];
+                roomRef = ref.child(path);
+                ttt.playerStatus = false;
+                ttt.onlinePlayerStatus = false;
+                roomRef.update({
+                    "roomStatus":0
+                });
+                ttt.listenToRoom(roomRef);
+                //var childRef = ref.child(path);
+                // console.log(childRef.toString());
+                //console.log("has empty room");
+                //return path;
+            }
+            else{
+                var newPath;
+                //ttt.onlinePlayerStatus = true;
+                ref.orderByValue().limitToLast(1).once("value", function(keyshot) {
+                    keyshot.forEach(function(data) {
+                        //console.log(parseInt(data.key())+1);
+                        newPath = parseInt(data.key())+1;
+                    });
+                    ref.child(newPath).set({"roomStatus":1,"winner":-1,"position":-1});
+                    roomRef = ref.child(newPath);
+                    ttt.listenToRoom(roomRef);
+                    document.getElementById("finding-player2").setAttribute('style','display:block');
+                    //return newPath;
+                });
+                //console.log("dont have empty room");
+            }
+        },function(errorObject){
+            console.log("The read failed: " + errorObject.code);
+        });
+    },
+    listenToRoom:function(roomRef){
+        roomRef.on("child_changed",function(childSnapshot){
+            if(childSnapshot.val() == 0 && childSnapshot.name() == "roomStatus"){
+                document.getElementById("finding-player2").setAttribute('style','display:none');
+                alert("game start");
+            }
+            if(ttt.playerStatus == false){
+                if(ttt.playerStatus == true){
+                    alert("its your turn!")
+                }
+                if(childSnapshot.name() == "winner" && ttt.onlinePlayerStatus == true && childSnapshot.val() == 1){
+                    alert("You Win!");
+                }
+                else if(childSnapshot.name() == "winner" && ttt.onlinePlayerStatus == false && childSnapshot.val() == 0){
+                    alert("You Win!");
+                }
+                else if(childSnapshot.name() == "winner" && ttt.onlinePlayerStatus == true && childSnapshot.val() == 0){
+                    alert("You Lose!");
+                }
+                else if(childSnapshot.name() == "winner" && ttt.onlinePlayerStatus == false && childSnapshot.val() == 1){
+                    alert("You Lose!");
+                }
 
+            }
+            //console.log("The updated post title is " + childSnapshot.title); 
+        });
     },
     drawCircle:function(topLeftP,botRightP,drawStyle){
         var radius = (botRightP.x - topLeftP.x)/2;
